@@ -6578,8 +6578,7 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
 			break;
 		if (i == 2) {
 			e_err("The NVM Checksum Is Not Valid\n");
-			err = -EIO;
-			goto err_eeprom;
+			break;
 		}
 	}
 

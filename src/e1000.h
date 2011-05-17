@@ -1,7 +1,7 @@
 /*******************************************************************************
 
   Intel PRO/1000 Linux driver
-  Copyright(c) 1999 - 2010 Intel Corporation.
+  Copyright(c) 1999 - 2011 Intel Corporation.
 
   This program is free software; you can redistribute it and/or modify it
   under the terms and conditions of the GNU General Public License,
@@ -54,7 +54,7 @@ struct e1000_info;
 
 
 #ifdef CONFIG_E1000E_MSIX
-/* Interrupt modes, as used by the IntMode paramter */
+/* Interrupt modes, as used by the IntMode parameter */
 #define E1000E_INT_MODE_LEGACY		0
 #define E1000E_INT_MODE_MSI		1
 #define E1000E_INT_MODE_MSIX		2
@@ -97,6 +97,33 @@ struct e1000_info;
 
 /* Time to wait before putting the device into D3 if there's no link (in ms). */
 #define LINK_TIMEOUT		100
+
+#define DEFAULT_RDTR			0
+#define DEFAULT_RADV			8
+#define BURST_RDTR			0x20
+#define BURST_RADV			0x20
+
+/*
+ * in the case of WTHRESH, it appears at least the 82571/2 hardware
+ * writes back 4 descriptors when WTHRESH=5, and 3 descriptors when
+ * WTHRESH=4, and since we want 64 bytes at a time written back, set
+ * it to 5
+ */
+#define E1000_TXDCTL_DMA_BURST_ENABLE                          \
+	(E1000_TXDCTL_GRAN | /* set descriptor granularity */  \
+	 E1000_TXDCTL_COUNT_DESC |                             \
+	 (5 << 16) | /* wthresh must be +1 more than desired */\
+	 (1 << 8)  | /* hthresh */                             \
+	 0x1f)       /* pthresh */
+
+#define E1000_RXDCTL_DMA_BURST_ENABLE                          \
+	(0x01000000 | /* set descriptor granularity */         \
+	 (4 << 16)  | /* set writeback threshold    */         \
+	 (4 << 8)   | /* set prefetch threshold     */         \
+	 0x20)        /* set hthresh                */
+
+#define E1000_TIDV_FPD (1 << 31)
+#define E1000_RDTR_FPD (1 << 31)
 
 enum e1000_boards {
 	board_82571,
@@ -232,7 +259,6 @@ struct e1000_adapter {
 	u32 txd_cmd;
 
 	bool detect_tx_hung;
-	int phy_hang_count;
 	u8 tx_timeout_factor;
 
 	u32 tx_int_delay;
@@ -314,6 +340,7 @@ struct e1000_adapter {
 
 	u32 msg_enable;
 #ifdef CONFIG_E1000E_MSIX
+	unsigned int num_vectors;
 	struct msix_entry *msix_entries;
 	int int_mode;
 	u32 eiac_mask;
@@ -337,6 +364,8 @@ struct e1000_adapter {
 	u32 *config_space;
 
 	bool idle_check;
+	int node; /* store the node to allocate memory on */
+	int phy_hang_count;
 };
 
 struct e1000_info {
@@ -391,7 +420,9 @@ struct e1000_info {
 #define FLAG2_DISABLE_ASPM_L1             (1 << 3)
 #define FLAG2_HAS_PHY_STATS               (1 << 4)
 #define FLAG2_HAS_EEE                     (1 << 5)
-#define FLAG2_CHECK_PHY_HANG              (1 << 6)
+#define FLAG2_DMA_BURST                   (1 << 6)
+#define FLAG2_CHECK_PHY_HANG              (1 << 7)
+#define FLAG2_DISABLE_AIM                 (1 << 8)
 
 #define E1000_RX_DESC_PS(R, i)	    \
 	(&(((union e1000_rx_desc_packet_split *)((R).desc))[i]))
@@ -418,6 +449,7 @@ extern const char e1000e_driver_version[];
 
 extern void e1000e_check_options(struct e1000_adapter *adapter);
 extern void e1000e_set_ethtool_ops(struct net_device *netdev);
+extern void e1000e_led_blink_task(struct work_struct *work);
 #ifdef ETHTOOL_OPS_COMPAT
 extern int ethtool_ioctl(struct ifreq *ifr);
 #endif
@@ -436,14 +468,14 @@ extern void e1000e_update_stats(struct e1000_adapter *adapter);
 extern void e1000e_set_interrupt_capability(struct e1000_adapter *adapter);
 extern void e1000e_reset_interrupt_capability(struct e1000_adapter *adapter);
 #endif
+extern void e1000e_get_hw_control(struct e1000_adapter *adapter);
+extern void e1000e_release_hw_control(struct e1000_adapter *adapter);
 
 extern unsigned int copybreak;
 
 extern void e1000_init_function_pointers_82571(struct e1000_hw *hw);
 extern void e1000_init_function_pointers_80003es2lan(struct e1000_hw *hw);
 extern void e1000_init_function_pointers_ich8lan(struct e1000_hw *hw);
-
-extern s32 e1000e_read_pba_num(struct e1000_hw *hw, u32 *pba_num);
 
 static inline s32 e1000e_commit_phy(struct e1000_hw *hw)
 {

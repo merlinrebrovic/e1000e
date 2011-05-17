@@ -1,7 +1,7 @@
 /*******************************************************************************
 
   Intel PRO/1000 Linux driver
-  Copyright(c) 1999 - 2010 Intel Corporation.
+  Copyright(c) 1999 - 2011 Intel Corporation.
 
   This program is free software; you can redistribute it and/or modify it
   under the terms and conditions of the GNU General Public License,
@@ -78,10 +78,9 @@ MODULE_PARM_DESC(copybreak,
 	MODULE_PARM_DESC(X, desc);
 #endif
 
-
 /*
  * Transmit Interrupt Delay in units of 1.024 microseconds
- * Tx interrupt delay needs to typically be set to something non zero
+ * Tx interrupt delay needs to typically be set to something non-zero
  *
  * Valid Range: 0-65535
  */
@@ -107,7 +106,6 @@ E1000_PARAM(TxAbsIntDelay, "Transmit Absolute Interrupt Delay");
  * Valid Range: 0-65535
  */
 E1000_PARAM(RxIntDelay, "Receive Interrupt Delay");
-#define DEFAULT_RDTR 0
 #define MAX_RXDELAY 0xFFFF
 #define MIN_RXDELAY 0
 
@@ -117,7 +115,6 @@ E1000_PARAM(RxIntDelay, "Receive Interrupt Delay");
  * Valid Range: 0-65535
  */
 E1000_PARAM(RxAbsIntDelay, "Receive Absolute Interrupt Delay");
-#define DEFAULT_RADV 8
 #define MAX_RXABSDELAY 0xFFFF
 #define MIN_RXABSDELAY 0
 
@@ -179,6 +176,17 @@ E1000_PARAM(CrcStripping, "Enable CRC Stripping, disable if your BMC needs " \
  * Default Value: 1
  */
 E1000_PARAM(EEE, "Enable/disable on parts that support the feature");
+
+/* Enable node specific allocation of all data structures, typically
+ *  specific to routing setups, not generally useful.
+ *
+ *  Depends on: NUMA configuration
+ *
+ * Valid Range: -1, 0-32768
+ *
+ * Default Value: -1 (disabled, default to kernel choice of node)
+ */
+E1000_PARAM(Node, "[ROUTING] Node to allocate memory on, default -1");
 
 struct e1000_option {
 	enum { enable_option, range_option, list_option } type;
@@ -495,5 +503,43 @@ void __devinit e1000e_check_options(struct e1000_adapter *adapter)
 				hw->dev_spec.ich8lan.eee_disable = !opt.def;
 			}
 		}
+	}
+	{ /* configure node specific allocation */
+		static struct e1000_option opt = {
+			.type = range_option,
+			.name = "Node used to allocate memory",
+			.err  = "defaulting to -1 (disabled)",
+#ifdef HAVE_EARLY_VMALLOC_NODE
+			.def  = 0,
+#else
+			.def  = -1,
+#endif
+			.arg  = { .r = { .min = 0,
+					 .max = MAX_NUMNODES - 1 } }
+		};
+		int node = opt.def;
+
+		/* if the default was zero then we need to set the
+		 * default value to an online node, which is not
+		 * necessarily zero, and the constant initializer
+		 * above can't take first_online_node */
+		if (node == 0)
+			/* must set opt.def for validate */
+			opt.def = node = first_online_node;
+
+		if (num_Node > bd) {
+			node = Node[bd];
+			e1000_validate_option((uint *)&node, &opt, adapter);
+			if (node != OPTION_UNSET)
+				e_info("node used for allocation: %d\n", node);
+		}
+
+		/* check sanity of the value */
+		if ((node != -1) && !node_online(node)) {
+			e_info("ignoring node set to invalid value %d\n", node);
+			node = opt.def;
+		}
+
+		adapter->node = node;
 	}
 }

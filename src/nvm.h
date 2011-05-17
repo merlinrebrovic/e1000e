@@ -1,7 +1,7 @@
 /*******************************************************************************
 
   Intel PRO/1000 Linux driver
-  Copyright(c) 1999 - 2010 Intel Corporation.
+  Copyright(c) 1999 - 2011 Intel Corporation.
 
   This program is free software; you can redistribute it and/or modify it
   under the terms and conditions of the GNU General Public License,
@@ -26,33 +26,27 @@
 
 *******************************************************************************/
 
-#ifndef _E1000_82571_H_
-#define _E1000_82571_H_
+#ifndef _E1000_NVM_H_
+#define _E1000_NVM_H_
 
-#define ID_LED_RESERVED_F746 0xF746
-#define ID_LED_DEFAULT_82573 ((ID_LED_DEF1_DEF2 << 12) | \
-                              (ID_LED_OFF1_ON2  <<  8) | \
-                              (ID_LED_DEF1_DEF2 <<  4) | \
-                              (ID_LED_DEF1_DEF2))
+void e1000_init_nvm_ops_generic(struct e1000_hw *hw);
+s32  e1000e_acquire_nvm(struct e1000_hw *hw);
 
-#define E1000_GCR_L1_ACT_WITHOUT_L0S_RX 0x08000000
+s32  e1000e_poll_eerd_eewr_done(struct e1000_hw *hw, int ee_reg);
+s32  e1000_read_mac_addr_generic(struct e1000_hw *hw);
+s32  e1000_read_pba_string_generic(struct e1000_hw *hw, u8 *pba_num,
+                                   u32 pba_num_size);
+s32  e1000e_read_nvm_eerd(struct e1000_hw *hw, u16 offset, u16 words,
+                         u16 *data);
+s32  e1000e_valid_led_default(struct e1000_hw *hw, u16 *data);
+s32  e1000e_validate_nvm_checksum_generic(struct e1000_hw *hw);
+s32  e1000_write_nvm_eewr(struct e1000_hw *hw, u16 offset,
+                          u16 words, u16 *data);
+s32  e1000e_write_nvm_spi(struct e1000_hw *hw, u16 offset, u16 words,
+                         u16 *data);
+s32  e1000e_update_nvm_checksum_generic(struct e1000_hw *hw);
+void e1000e_release_nvm(struct e1000_hw *hw);
 
-/* Intr Throttling - RW */
-#define E1000_EITR_82574(_n)    (0x000E8 + (0x4 * (_n)))
-
-#define E1000_EIAC_82574        0x000DC /* Ext. Interrupt Auto Clear - RW */
-#define E1000_EIAC_MASK_82574   0x01F00000
-
-#define E1000_NVM_INIT_CTRL2_MNGM 0x6000 /* Manageability Operation Mode mask */
-
-#define E1000_RXCFGL    0x0B634 /* TimeSync Rx EtherType & Msg Type Reg - RW */
-
-#define E1000_BASE1000T_STATUS 10
-#define E1000_IDLE_ERROR_COUNT_MASK 0xFF
-#define E1000_RECEIVE_ERROR_COUNTER 21
-#define E1000_RECEIVE_ERROR_MAX 0xFFFF
-bool e1000_check_phy_82574(struct e1000_hw *hw);
-bool e1000e_get_laa_state_82571(struct e1000_hw *hw);
-void e1000e_set_laa_state_82571(struct e1000_hw *hw, bool state);
+#define E1000_STM_OPCODE  0xDB00
 
 #endif

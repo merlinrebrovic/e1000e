@@ -1,7 +1,7 @@
 /*******************************************************************************
 
   Intel PRO/1000 Linux driver
-  Copyright(c) 1999 - 2010 Intel Corporation.
+  Copyright(c) 1999 - 2011 Intel Corporation.
 
   This program is free software; you can redistribute it and/or modify it
   under the terms and conditions of the GNU General Public License,
@@ -94,7 +94,7 @@ s32 e1000e_get_bus_info_pcie(struct e1000_hw *hw)
 			bus->speed = e1000_bus_speed_unknown;
 			break;
 		}
-		
+
 		bus->width = (enum e1000_bus_width)((pcie_link_status &
 		                                PCIE_LINK_WIDTH_MASK) >>
 		                               PCIE_LINK_WIDTH_SHIFT);
@@ -214,6 +214,16 @@ s32 e1000_check_alt_mac_addr_generic(struct e1000_hw *hw)
 	s32 ret_val = E1000_SUCCESS;
 	u16 offset, nvm_alt_mac_addr_offset, nvm_data;
 	u8 alt_mac_addr[ETH_ALEN];
+
+	ret_val = e1000_read_nvm(hw, NVM_COMPAT, 1, &nvm_data);
+	if (ret_val)
+		goto out;
+
+	/* Check for LOM (vs. NIC) or one of two valid mezzanine cards */
+	if (!((nvm_data & NVM_COMPAT_LOM) ||
+	      (hw->adapter->pdev->device == E1000_DEV_ID_82571EB_SERDES_DUAL) ||
+	      (hw->adapter->pdev->device == E1000_DEV_ID_82571EB_SERDES_QUAD)))
+		goto out;
 
 	ret_val = e1000_read_nvm(hw, NVM_ALT_MAC_ADDR_PTR, 1,
 	                         &nvm_alt_mac_addr_offset);
@@ -556,7 +566,7 @@ s32 e1000e_check_for_fiber_link(struct e1000_hw *hw)
 			mac->autoneg_failed = 1;
 			goto out;
 		}
-		e_dbg("NOT RXing /C/, disable AutoNeg and force link.\n");
+		e_dbg("NOT Rx'ing /C/, disable AutoNeg and force link.\n");
 
 		/* Disable auto-negotiation in the TXCW register */
 		ew32(TXCW, (mac->txcw & ~E1000_TXCW_ANE));
@@ -579,7 +589,7 @@ s32 e1000e_check_for_fiber_link(struct e1000_hw *hw)
 		 * and disable forced link in the Device Control register
 		 * in an attempt to auto-negotiate with our link partner.
 		 */
-		e_dbg("RXing /C/, enable AutoNeg and stop forcing link.\n");
+		e_dbg("Rx'ing /C/, enable AutoNeg and stop forcing link.\n");
 		ew32(TXCW, mac->txcw);
 		ew32(CTRL, (ctrl & ~E1000_CTRL_SLU));
 
@@ -622,7 +632,7 @@ s32 e1000e_check_for_serdes_link(struct e1000_hw *hw)
 			mac->autoneg_failed = 1;
 			goto out;
 		}
-		e_dbg("NOT RXing /C/, disable AutoNeg and force link.\n");
+		e_dbg("NOT Rx'ing /C/, disable AutoNeg and force link.\n");
 
 		/* Disable auto-negotiation in the TXCW register */
 		ew32(TXCW, (mac->txcw & ~E1000_TXCW_ANE));
@@ -645,7 +655,7 @@ s32 e1000e_check_for_serdes_link(struct e1000_hw *hw)
 		 * and disable forced link in the Device Control register
 		 * in an attempt to auto-negotiate with our link partner.
 		 */
-		e_dbg("RXing /C/, enable AutoNeg and stop forcing link.\n");
+		e_dbg("Rx'ing /C/, enable AutoNeg and stop forcing link.\n");
 		ew32(TXCW, mac->txcw);
 		ew32(CTRL, (ctrl & ~E1000_CTRL_SLU));
 

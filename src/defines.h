@@ -1,7 +1,7 @@
 /*******************************************************************************
 
   Intel PRO/1000 Linux driver
-  Copyright(c) 1999 - 2010 Intel Corporation.
+  Copyright(c) 1999 - 2011 Intel Corporation.
 
   This program is free software; you can redistribute it and/or modify it
   under the terms and conditions of the GNU General Public License,
@@ -322,9 +322,9 @@
 #define E1000_RCTL_LBM_TCVR       0x000000C0    /* tcvr loopback mode */
 #define E1000_RCTL_DTYP_MASK      0x00000C00    /* Descriptor type mask */
 #define E1000_RCTL_DTYP_PS        0x00000400    /* Packet Split descriptor */
-#define E1000_RCTL_RDMTS_HALF     0x00000000    /* rx desc min thresh size */
-#define E1000_RCTL_RDMTS_QUAT     0x00000100    /* rx desc min thresh size */
-#define E1000_RCTL_RDMTS_EIGTH    0x00000200    /* rx desc min thresh size */
+#define E1000_RCTL_RDMTS_HALF     0x00000000    /* Rx desc min thresh size */
+#define E1000_RCTL_RDMTS_QUAT     0x00000100    /* Rx desc min thresh size */
+#define E1000_RCTL_RDMTS_EIGTH    0x00000200    /* Rx desc min thresh size */
 #define E1000_RCTL_MO_SHIFT       12            /* multicast offset shift */
 #define E1000_RCTL_MO_0           0x00000000    /* multicast offset 11:0 */
 #define E1000_RCTL_MO_1           0x00001000    /* multicast offset 12:1 */
@@ -333,14 +333,14 @@
 #define E1000_RCTL_MDR            0x00004000    /* multicast desc ring 0 */
 #define E1000_RCTL_BAM            0x00008000    /* broadcast enable */
 /* these buffer sizes are valid if E1000_RCTL_BSEX is 0 */
-#define E1000_RCTL_SZ_2048        0x00000000    /* rx buffer size 2048 */
-#define E1000_RCTL_SZ_1024        0x00010000    /* rx buffer size 1024 */
-#define E1000_RCTL_SZ_512         0x00020000    /* rx buffer size 512 */
-#define E1000_RCTL_SZ_256         0x00030000    /* rx buffer size 256 */
+#define E1000_RCTL_SZ_2048        0x00000000    /* Rx buffer size 2048 */
+#define E1000_RCTL_SZ_1024        0x00010000    /* Rx buffer size 1024 */
+#define E1000_RCTL_SZ_512         0x00020000    /* Rx buffer size 512 */
+#define E1000_RCTL_SZ_256         0x00030000    /* Rx buffer size 256 */
 /* these buffer sizes are valid if E1000_RCTL_BSEX is 1 */
-#define E1000_RCTL_SZ_16384       0x00010000    /* rx buffer size 16384 */
-#define E1000_RCTL_SZ_8192        0x00020000    /* rx buffer size 8192 */
-#define E1000_RCTL_SZ_4096        0x00030000    /* rx buffer size 4096 */
+#define E1000_RCTL_SZ_16384       0x00010000    /* Rx buffer size 16384 */
+#define E1000_RCTL_SZ_8192        0x00020000    /* Rx buffer size 8192 */
+#define E1000_RCTL_SZ_4096        0x00030000    /* Rx buffer size 4096 */
 #define E1000_RCTL_VFE            0x00040000    /* vlan filter enable */
 #define E1000_RCTL_CFIEN          0x00080000    /* canonical form enable */
 #define E1000_RCTL_CFI            0x00100000    /* canonical form indicator */
@@ -618,7 +618,7 @@
 
 /* Transmit Control */
 #define E1000_TCTL_RST    0x00000001    /* software reset */
-#define E1000_TCTL_EN     0x00000002    /* enable tx */
+#define E1000_TCTL_EN     0x00000002    /* enable Tx */
 #define E1000_TCTL_BCE    0x00000004    /* busy check enable */
 #define E1000_TCTL_PSP    0x00000008    /* pad short packets */
 #define E1000_TCTL_CT     0x00000ff0    /* collision threshold */
@@ -750,10 +750,10 @@
 #define E1000_ICR_TXDW          0x00000001 /* Transmit desc written back */
 #define E1000_ICR_TXQE          0x00000002 /* Transmit Queue empty */
 #define E1000_ICR_LSC           0x00000004 /* Link Status Change */
-#define E1000_ICR_RXSEQ         0x00000008 /* rx sequence error */
-#define E1000_ICR_RXDMT0        0x00000010 /* rx desc min. threshold (0) */
-#define E1000_ICR_RXO           0x00000040 /* rx overrun */
-#define E1000_ICR_RXT0          0x00000080 /* rx timer intr (ring 0) */
+#define E1000_ICR_RXSEQ         0x00000008 /* Rx sequence error */
+#define E1000_ICR_RXDMT0        0x00000010 /* Rx desc min. threshold (0) */
+#define E1000_ICR_RXO           0x00000040 /* Rx overrun */
+#define E1000_ICR_RXT0          0x00000080 /* Rx timer intr (ring 0) */
 #define E1000_ICR_VMMB          0x00000100 /* VM MB event */
 #define E1000_ICR_MDAC          0x00000200 /* MDIO access complete */
 #define E1000_ICR_RXCFG         0x00000400 /* Rx /c/ ordered set */
@@ -790,9 +790,9 @@
 /* PBA ECC Register */
 #define E1000_PBA_ECC_COUNTER_MASK  0xFFF00000 /* ECC counter mask */
 #define E1000_PBA_ECC_COUNTER_SHIFT 20         /* ECC counter shift value */
-#define E1000_PBA_ECC_CORR_EN      0x00000001 /* Enable ECC error correction */
-#define E1000_PBA_ECC_STAT_CLR      0x00000002 /* Clear ECC error counter */
-#define E1000_PBA_ECC_INT_EN     0x00000004 /* Enable ICR bit 5 on ECC error */
+#define E1000_PBA_ECC_CORR_EN   0x00000001 /* Enable ECC error correction */
+#define E1000_PBA_ECC_STAT_CLR  0x00000002 /* Clear ECC error counter */
+#define E1000_PBA_ECC_INT_EN    0x00000004 /* Enable ICR bit 5 on ECC error */
 
 /*
  * This defines the bits that are set in the Interrupt Mask
@@ -825,10 +825,10 @@
 #define E1000_IMS_TXQE      E1000_ICR_TXQE      /* Transmit Queue empty */
 #define E1000_IMS_LSC       E1000_ICR_LSC       /* Link Status Change */
 #define E1000_IMS_VMMB      E1000_ICR_VMMB      /* Mail box activity */
-#define E1000_IMS_RXSEQ     E1000_ICR_RXSEQ     /* rx sequence error */
-#define E1000_IMS_RXDMT0    E1000_ICR_RXDMT0    /* rx desc min. threshold */
-#define E1000_IMS_RXO       E1000_ICR_RXO       /* rx overrun */
-#define E1000_IMS_RXT0      E1000_ICR_RXT0      /* rx timer intr */
+#define E1000_IMS_RXSEQ     E1000_ICR_RXSEQ     /* Rx sequence error */
+#define E1000_IMS_RXDMT0    E1000_ICR_RXDMT0    /* Rx desc min. threshold */
+#define E1000_IMS_RXO       E1000_ICR_RXO       /* Rx overrun */
+#define E1000_IMS_RXT0      E1000_ICR_RXT0      /* Rx timer intr */
 #define E1000_IMS_MDAC      E1000_ICR_MDAC      /* MDIO access complete */
 #define E1000_IMS_RXCFG     E1000_ICR_RXCFG     /* Rx /c/ ordered set */
 #define E1000_IMS_GPI_EN0   E1000_ICR_GPI_EN0   /* GP Int 0 */
@@ -866,10 +866,10 @@
 #define E1000_ICS_TXDW      E1000_ICR_TXDW      /* Tx desc written back */
 #define E1000_ICS_TXQE      E1000_ICR_TXQE      /* Transmit Queue empty */
 #define E1000_ICS_LSC       E1000_ICR_LSC       /* Link Status Change */
-#define E1000_ICS_RXSEQ     E1000_ICR_RXSEQ     /* rx sequence error */
-#define E1000_ICS_RXDMT0    E1000_ICR_RXDMT0    /* rx desc min. threshold */
-#define E1000_ICS_RXO       E1000_ICR_RXO       /* rx overrun */
-#define E1000_ICS_RXT0      E1000_ICR_RXT0      /* rx timer intr */
+#define E1000_ICS_RXSEQ     E1000_ICR_RXSEQ     /* Rx sequence error */
+#define E1000_ICS_RXDMT0    E1000_ICR_RXDMT0    /* Rx desc min. threshold */
+#define E1000_ICS_RXO       E1000_ICR_RXO       /* Rx overrun */
+#define E1000_ICS_RXT0      E1000_ICR_RXT0      /* Rx timer intr */
 #define E1000_ICS_MDAC      E1000_ICR_MDAC      /* MDIO access complete */
 #define E1000_ICS_RXCFG     E1000_ICR_RXCFG     /* Rx /c/ ordered set */
 #define E1000_ICS_GPI_EN0   E1000_ICR_GPI_EN0   /* GP Int 0 */
@@ -899,11 +899,11 @@
 #define E1000_ICS_EPRST     E1000_ICR_EPRST
 
 /* Transmit Descriptor Control */
-#define E1000_TXDCTL_PTHRESH 0x0000003F /* TXDCTL Prefetch Threshold */
-#define E1000_TXDCTL_HTHRESH 0x00003F00 /* TXDCTL Host Threshold */
-#define E1000_TXDCTL_WTHRESH 0x003F0000 /* TXDCTL Writeback Threshold */
-#define E1000_TXDCTL_GRAN    0x01000000 /* TXDCTL Granularity */
-#define E1000_TXDCTL_LWTHRESH 0xFE000000 /* TXDCTL Low Threshold */
+#define E1000_TXDCTL_PTHRESH    0x0000003F /* TXDCTL Prefetch Threshold */
+#define E1000_TXDCTL_HTHRESH    0x00003F00 /* TXDCTL Host Threshold */
+#define E1000_TXDCTL_WTHRESH    0x003F0000 /* TXDCTL Writeback Threshold */
+#define E1000_TXDCTL_GRAN       0x01000000 /* TXDCTL Granularity */
+#define E1000_TXDCTL_LWTHRESH   0xFE000000 /* TXDCTL Low Threshold */
 #define E1000_TXDCTL_FULL_TX_DESC_WB 0x01010000 /* GRAN=1, WTHRESH=1 */
 #define E1000_TXDCTL_MAX_TX_DESC_PREFETCH 0x0100001F /* GRAN=1, PTHRESH=31 */
 /* Enable the counting of descriptors still to be processed. */
@@ -930,8 +930,9 @@
 #define E1000_RAH_AV  0x80000000        /* Receive descriptor valid */
 #define E1000_RAL_MAC_ADDR_LEN 4
 #define E1000_RAH_MAC_ADDR_LEN 2
-#define E1000_RAH_POOL_MASK 0x03FC0000
-#define E1000_RAH_POOL_1 0x00040000
+#define E1000_RAH_POOL_MASK     0x03FC0000
+#define E1000_RAH_POOL_SHIFT    18
+#define E1000_RAH_POOL_1        0x00040000
 
 /* Error Codes */
 #define E1000_SUCCESS      0
@@ -948,6 +949,9 @@
 #define E1000_ERR_SWFW_SYNC 13
 #define E1000_NOT_IMPLEMENTED 14
 #define E1000_ERR_MBX      15
+#define E1000_ERR_INVALID_ARGUMENT  16
+#define E1000_ERR_NO_SPACE          17
+#define E1000_ERR_NVM_PBA_SECTION   18
 
 /* Loop limit on how long we wait for auto-negotiation to complete */
 #define FIBER_LINK_UP_LIMIT               50
@@ -1191,12 +1195,19 @@
 /* Mask bits for fields in Word 0x1a of the NVM */
 #define NVM_WORD1A_ASPM_MASK  0x000C
 
+/* Mask bits for fields in Word 0x03 of the EEPROM */
+#define NVM_COMPAT_LOM    0x0800
+
+/* length of string needed to store PBA number */
+#define E1000_PBANUM_LENGTH             11
+
 /* For checksumming, the sum of all words in the NVM should equal 0xBABA. */
 #define NVM_SUM                    0xBABA
 
 #define NVM_MAC_ADDR_OFFSET        0
 #define NVM_PBA_OFFSET_0           8
 #define NVM_PBA_OFFSET_1           9
+#define NVM_PBA_PTR_GUARD          0xFAFA
 #define NVM_RESERVED_WORD          0xFFFF
 #define NVM_PHY_CLASS_A            0x8000
 #define NVM_SERDES_AMPLITUDE_MASK  0x000F
@@ -1256,9 +1267,6 @@
 #define PCIE_LINK_SPEED_5000         0x02
 #define PCIE_DEVICE_CONTROL2_16ms    0x0005
 
-#ifndef ETH_ALEN
-#define ETH_ALEN                 6
-#endif
 
 #define PHY_REVISION_MASK      0xFFFFFFF0
 #define MAX_PHY_REG_ADDRESS    0x1F  /* 5 bit address bus (0-0x1F) */
@@ -1376,9 +1384,17 @@
 #define M88E1000_EPSCR_SLAVE_DOWNSHIFT_1X    0x0100
 #define M88E1000_EPSCR_SLAVE_DOWNSHIFT_2X    0x0200
 #define M88E1000_EPSCR_SLAVE_DOWNSHIFT_3X    0x0300
-#define M88E1000_EPSCR_TX_CLK_2_5     0x0060 /* 2.5 MHz TX_CLK */
-#define M88E1000_EPSCR_TX_CLK_25      0x0070 /* 25  MHz TX_CLK */
-#define M88E1000_EPSCR_TX_CLK_0       0x0000 /* NO  TX_CLK */
+#define M88E1000_EPSCR_TX_CLK_2_5       0x0060 /* 2.5 MHz TX_CLK */
+#define M88E1000_EPSCR_TX_CLK_25        0x0070 /* 25  MHz TX_CLK */
+#define M88E1000_EPSCR_TX_CLK_0         0x0000 /* NO  TX_CLK */
+
+/* M88E1111 Specific Registers */
+#define M88E1111_PHY_PAGE_SELECT1       0x16  /* for registers 0-28 */
+#define M88E1111_PHY_PAGE_SELECT2       0x1D  /* for registers 30-31 */
+
+/* M88E1111 page select register mask */
+#define M88E1111_PHY_PAGE_SELECT_MASK1  0xFF
+#define M88E1111_PHY_PAGE_SELECT_MASK2  0x3F
 
 
 /* M88EC018 Rev 2 specific DownShift settings */

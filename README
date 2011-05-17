@@ -1,7 +1,7 @@
 Linux* Base Driver for Intel(R) Network Connection
 ===============================================================
 
-June 14, 2010
+February 8, 2011
 
 Contents
 ========
@@ -57,8 +57,7 @@ Driver ID Guide at:
     http://support.intel.com/support/go/network/adapter/idguide.htm
 
 For the latest Intel network drivers for Linux, refer to the following
-website.  In the search field, enter your adapter name or type, or use the
-networking link on the left to search for your adapter:
+website. Select the link for your adapter.
 
     http://support.intel.com/support/go/network/adapter/home.htm
 
@@ -172,7 +171,7 @@ NOTES:  For more information about the InterruptThrottleRate,
 
 InterruptThrottleRate
 ---------------------
-Valid Range:   0,1,3,4, 100-100000 (0=off, 1=dynamic, 3=dynamic conservative
+Valid Range:   0,1,3,4, 100-100000 (0=off, 1=dynamic, 3=dynamic conservative,
                                     4=simplified balancing)
 Default Value: 3
 
@@ -189,9 +188,7 @@ but will increase latency as packets are not processed as quickly.
 
 The default behaviour of the driver previously assumed a static 
 InterruptThrottleRate value of 8000, providing a good fallback value for 
-all traffic types,but lacking in small packet performance and latency. 
-The hardware can handle many more small packets per second however, and 
-for this reason an adaptive interrupt moderation algorithm was implemented.
+all traffic types, but lacking in small packet performance and latency. 
 
 The driver has two adaptive modes (setting 1 or 3) in which
 it dynamically adjusts the InterruptThrottleRate value based on the traffic 
@@ -465,7 +462,10 @@ Additional Configurations
      Intel(R) 82562GT-2 10/100 Network Connection
      Intel(R) 82583V Gigabit Network Connection
      Intel(R) 82578DC Gigabit Network Connection
-     Intel(R) 82567V-3 Gigabit Network Connection 
+     Intel(R) 82567V-3 Gigabit Network Connection
+
+  - Jumbo Frames cannot be configured on an 82579-based Network device, if 
+    MACSec is enabled on the system.
 
   Ethtool
   -------
@@ -475,6 +475,9 @@ Additional Configurations
   strongly recommend downloading the latest version at:
 
   http://sourceforge.net/projects/gkernel.
+
+  NOTE: When validating enable/disable tests on some parts (82578, for example)
+  you need to add a few seconds between tests when working with ethtool.
 
   Speed and Duplex
   ----------------
@@ -529,6 +532,14 @@ Additional Configurations
 
 Known Issues/Troubleshooting
 ============================
+
+For known hardware and troubleshooting issues, refer to the following website.
+
+    http://support.intel.com/support/go/network/adapter/home.htm
+
+Either select the link for your adapter or perform a search for the adapter 
+number. The adapter's page lists many issues. For a complete list of hardware
+issues download your adapter's user guide and read the Release Notes.  
 
   NOTE: After installing the driver, if your Intel Network Connection is not 
   working, verify in the "In This Release" section of the readme that you have 
@@ -688,6 +699,38 @@ Known Issues/Troubleshooting
   Page allocation failure. order:0 errors may occur under stress with kernels 
   2.6.25 and above. This is caused by the way the Linux kernel reports this 
   stressed condition.
+  
+  Network throughput degradation observed with Onboard video versus add-in 
+  Video Card on  82579LM Gigabit Network Connection when used with some older
+  kernels.
+  ------------------------------------------------------------------------
+  This issue can be worked around by specifying "pci=nommconf" in the kernel
+  boot parameter or by using another kernel boot parameter 
+  "memmap=128M$0x100000000" which marks 128 MB region at 4GB as reserved and
+  therefore OS won't use these RAM pages.
+
+  This issue is fixed in kernel version 2.6.21, where the kernel tries to 
+  dynamically find out the mmconfig size by looking at the number of buses 
+  that the mmconfig segment maps to.
+
+  This issue won't be seen on 32bit version of EL5, as in that case, the kernel 
+  sees that RAM is located around the 256MB window and avoids using the 
+  mmconfig space.
+
+  Activity LED blinks unexpectedly
+  --------------------------------
+  If a system based on the 82577, 82578, or 82579 controller is connected
+  to a hub, the Activity LED will blink for all network traffic present on
+  the hub. Connecting the system to a switch or router will filter out most
+  traffic not addressed to the local port.
+
+  Link may take longer than expected
+  -----------------------------------------------------------------------
+  With some Phy and switch combinations, link can take longer than expected.  
+  This can be an issue on Linux distributions that timeout when checking for 
+  link prior to acquiring a DHCP address; however there is usually a way to 
+  work around this (e.g. set LINKDELAY in the interface configuration on RHEL).
+
 
 Support
 =======
@@ -708,7 +751,7 @@ License
 =======
 
 Intel Gigabit Linux driver.
-Copyright(c) 1999 - 2008 Intel Corporation.
+Copyright(c) 1999 - 2011 Intel Corporation.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms and conditions of the GNU General Public License,

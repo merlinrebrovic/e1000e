@@ -1,7 +1,7 @@
 /*******************************************************************************
 
   Intel PRO/1000 Linux driver
-  Copyright(c) 1999 - 2010 Intel Corporation.
+  Copyright(c) 1999 - 2011 Intel Corporation.
 
   This program is free software; you can redistribute it and/or modify it
   under the terms and conditions of the GNU General Public License,
@@ -38,21 +38,21 @@ static s32 e1000_access_phy_debug_regs_hv(struct e1000_hw *hw, u32 offset,
                                           u16 *data, bool read);
 
 /* Cable length tables */
-static const u16 e1000_m88_cable_length_table[] =
-	{ 0, 50, 80, 110, 140, 140, E1000_CABLE_LENGTH_UNDEFINED };
+static const u16 e1000_m88_cable_length_table[] = {
+	0, 50, 80, 110, 140, 140, E1000_CABLE_LENGTH_UNDEFINED };
 #define M88E1000_CABLE_LENGTH_TABLE_SIZE \
                 (sizeof(e1000_m88_cable_length_table) / \
                  sizeof(e1000_m88_cable_length_table[0]))
 
-static const u16 e1000_igp_2_cable_length_table[] =
-    { 0, 0, 0, 0, 0, 0, 0, 0, 3, 5, 8, 11, 13, 16, 18, 21,
-      0, 0, 0, 3, 6, 10, 13, 16, 19, 23, 26, 29, 32, 35, 38, 41,
-      6, 10, 14, 18, 22, 26, 30, 33, 37, 41, 44, 48, 51, 54, 58, 61,
-      21, 26, 31, 35, 40, 44, 49, 53, 57, 61, 65, 68, 72, 75, 79, 82,
-      40, 45, 51, 56, 61, 66, 70, 75, 79, 83, 87, 91, 94, 98, 101, 104,
-      60, 66, 72, 77, 82, 87, 92, 96, 100, 104, 108, 111, 114, 117, 119, 121,
-      83, 89, 95, 100, 105, 109, 113, 116, 119, 122, 124,
-      104, 109, 114, 118, 121, 124};
+static const u16 e1000_igp_2_cable_length_table[] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 3, 5, 8, 11, 13, 16, 18, 21, 0, 0, 0, 3,
+	6, 10, 13, 16, 19, 23, 26, 29, 32, 35, 38, 41, 6, 10, 14, 18, 22,
+	26, 30, 33, 37, 41, 44, 48, 51, 54, 58, 61, 21, 26, 31, 35, 40,
+	44, 49, 53, 57, 61, 65, 68, 72, 75, 79, 82, 40, 45, 51, 56, 61,
+	66, 70, 75, 79, 83, 87, 91, 94, 98, 101, 104, 60, 66, 72, 77, 82,
+	87, 92, 96, 100, 104, 108, 111, 114, 117, 119, 121, 83, 89, 95,
+	100, 105, 109, 113, 116, 119, 122, 124, 104, 109, 114, 118, 121,
+	124};
 #define IGP02E1000_CABLE_LENGTH_TABLE_SIZE \
                 (sizeof(e1000_igp_2_cable_length_table) / \
                  sizeof(e1000_igp_2_cable_length_table[0]))
@@ -189,6 +189,13 @@ s32 e1000e_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
 	}
 	*data = (u16) mdic;
 
+	/*
+	 * Allow some time after each MDIC transaction to avoid
+	 * reading duplicate data in the next MDIC transaction.
+	 */
+	if (hw->mac.type == e1000_pch2lan)
+		udelay(100);
+
 out:
 	return ret_val;
 }
@@ -245,6 +252,13 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
 		ret_val = -E1000_ERR_PHY;
 		goto out;
 	}
+
+	/*
+	 * Allow some time after each MDIC transaction to avoid
+	 * reading duplicate data in the next MDIC transaction.
+	 */
+	if (hw->mac.type == e1000_pch2lan)
+		udelay(100);
 
 out:
 	return ret_val;
@@ -596,7 +610,7 @@ s32 e1000_copper_link_setup_82577(struct e1000_hw *hw)
 	s32 ret_val;
 	u16 phy_data;
 
-	/* Enable CRS on TX. This must be set for half-duplex operation. */
+	/* Enable CRS on Tx. This must be set for half-duplex operation. */
 	ret_val = e1e_rphy(hw, I82577_CFG_REG, &phy_data);
 	if (ret_val)
 		goto out;
@@ -630,10 +644,9 @@ s32 e1000e_copper_link_setup_m88(struct e1000_hw *hw)
 	if (ret_val)
 		goto out;
 
-	phy_data |= M88E1000_PSCR_ASSERT_CRS_ON_TX;
 	/* For BM PHY this bit is downshift enable */
-	if (phy->type == e1000_phy_bm)
-		phy_data &= ~M88E1000_PSCR_ASSERT_CRS_ON_TX;
+	if (phy->type != e1000_phy_bm)
+		phy_data |= M88E1000_PSCR_ASSERT_CRS_ON_TX;
 
 	/*
 	 * Options:
@@ -1842,11 +1855,12 @@ s32 e1000e_get_cable_length_igp_2(struct e1000_hw *hw)
 	u16 phy_data, i, agc_value = 0;
 	u16 cur_agc_index, max_agc_index = 0;
 	u16 min_agc_index = IGP02E1000_CABLE_LENGTH_TABLE_SIZE - 1;
-	u16 agc_reg_array[IGP02E1000_PHY_CHANNEL_NUM] =
-	                                                 {IGP02E1000_PHY_AGC_A,
-	                                                  IGP02E1000_PHY_AGC_B,
-	                                                  IGP02E1000_PHY_AGC_C,
-	                                                  IGP02E1000_PHY_AGC_D};
+	static const u16 agc_reg_array[IGP02E1000_PHY_CHANNEL_NUM] = {
+	       IGP02E1000_PHY_AGC_A,
+	       IGP02E1000_PHY_AGC_B,
+	       IGP02E1000_PHY_AGC_C,
+	       IGP02E1000_PHY_AGC_D
+	};
 
 	/* Read the AGC registers for all channels */
 	for (i = 0; i < IGP02E1000_PHY_CHANNEL_NUM; i++) {
@@ -2343,7 +2357,7 @@ s32 e1000e_determine_phy_address(struct e1000_hw *hw)
 			 * If phy_type is valid, break - we found our
 			 * PHY address
 			 */
-			if (phy_type  != e1000_phy_unknown) {
+			if (phy_type != e1000_phy_unknown) {
 				ret_val = E1000_SUCCESS;
 				goto out;
 			}
@@ -2384,9 +2398,7 @@ static u32 e1000_get_phy_addr_for_bm_page(u32 page, u32 reg)
 s32 e1000e_write_phy_reg_bm(struct e1000_hw *hw, u32 offset, u16 data)
 {
 	s32 ret_val;
-	u32 page_select = 0;
 	u32 page = offset >> IGP_PAGE_SHIFT;
-	u32 page_shift = 0;
 
 	ret_val = hw->phy.ops.acquire(hw);
 	if (ret_val)
@@ -2402,6 +2414,8 @@ s32 e1000e_write_phy_reg_bm(struct e1000_hw *hw, u32 offset, u16 data)
 	hw->phy.addr = e1000_get_phy_addr_for_bm_page(page, offset);
 
 	if (offset > MAX_PHY_MULTI_PAGE_REG) {
+		u32 page_shift, page_select;
+
 		/*
 		 * Page select is register 31 for phy address 1 and 22 for
 		 * phy address 2 and 3. Page select is shifted only for
@@ -2443,9 +2457,7 @@ out:
 s32 e1000e_read_phy_reg_bm(struct e1000_hw *hw, u32 offset, u16 *data)
 {
 	s32 ret_val;
-	u32 page_select = 0;
 	u32 page = offset >> IGP_PAGE_SHIFT;
-	u32 page_shift = 0;
 
 	ret_val = hw->phy.ops.acquire(hw);
 	if (ret_val)
@@ -2461,6 +2473,8 @@ s32 e1000e_read_phy_reg_bm(struct e1000_hw *hw, u32 offset, u16 *data)
 	hw->phy.addr = e1000_get_phy_addr_for_bm_page(page, offset);
 
 	if (offset > MAX_PHY_MULTI_PAGE_REG) {
+		u32 page_shift, page_select;
+
 		/*
 		 * Page select is register 31 for phy address 1 and 22 for
 		 * phy address 2 and 3. Page select is shifted only for
@@ -2638,8 +2652,7 @@ static s32 e1000_access_phy_wakeup_reg_bm(struct e1000_hw *hw, u32 offset,
 	}
 
 	/* Select page 800 */
-	ret_val = e1000e_write_phy_reg_mdic(hw,
-	                                   IGP01E1000_PHY_PAGE_SELECT,
+	ret_val = e1000e_write_phy_reg_mdic(hw, IGP01E1000_PHY_PAGE_SELECT,
 	                                   (BM_WUC_PAGE << IGP_PAGE_SHIFT));
 
 	/* Write the page 800 offset value using opcode 0x11 */

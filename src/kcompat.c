@@ -1,7 +1,7 @@
 /*******************************************************************************
 
   Intel PRO/1000 Linux driver
-  Copyright(c) 1999 - 2010 Intel Corporation.
+  Copyright(c) 1999 - 2011 Intel Corporation.
 
   This program is free software; you can redistribute it and/or modify it
   under the terms and conditions of the GNU General Public License,
@@ -727,6 +727,16 @@ void _kc_free_netdev(struct net_device *netdev)
 #endif
 }
 #endif
+
+void *_kc_kmemdup(const void *src, size_t len, unsigned gfp)
+{
+	void *p;
+
+	p = kzalloc(len, gfp);
+	if (p)
+		memcpy(p, src, len);
+	return p;
+}
 #endif /* <= 2.6.18 */
 
 /*****************************************************************************/
@@ -960,19 +970,9 @@ out:
 #if ( LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30) )
 #endif /* < 2.6.30 */
 
-/*****************************************************************************/
-#if ( LINUX_VERSION_CODE < KERNEL_VERSION(2,6,33) ) || defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS)
-struct sk_buff *_kc_netdev_alloc_skb_ip_align(struct net_device *dev,
-                                              unsigned int length)
-{
-	struct sk_buff *skb;
+#if ( LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35) )
+#endif /* < 2.6.35 */
 
-	skb = alloc_skb(length + NET_SKB_PAD + NET_IP_ALIGN, GFP_ATOMIC);
-	if (skb) {
-		if (NET_IP_ALIGN + NET_SKB_PAD)
-			skb_reserve(skb, NET_IP_ALIGN + NET_SKB_PAD);
-		skb->dev = dev;
-	}
-	return skb;
-}
-#endif /* < 2.6.33 || defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) */
+/*****************************************************************************/
+#if ( LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36) )
+#endif /* < 2.6.36 */

@@ -89,7 +89,7 @@ static const u16 e1000_gg82563_cable_length_table[] = {
 static s32 e1000_init_phy_params_80003es2lan(struct e1000_hw *hw)
 {
 	struct e1000_phy_info *phy = &hw->phy;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	if (hw->phy.media_type != e1000_media_type_copper) {
 		phy->type        = e1000_phy_none;
@@ -186,7 +186,7 @@ static s32 e1000_init_nvm_params_80003es2lan(struct e1000_hw *hw)
 	nvm->ops.validate          = e1000e_validate_nvm_checksum_generic;
 	nvm->ops.write             = e1000_write_nvm_80003es2lan;
 
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -249,7 +249,7 @@ static s32 e1000_init_mac_params_80003es2lan(struct e1000_hw *hw)
 	/* ID LED init */
 	mac->ops.id_led_init = e1000e_id_led_init;
 	/* blink LED */
-	mac->ops.blink_led = e1000e_blink_led;
+	mac->ops.blink_led = e1000e_blink_led_generic;
 	/* setup LED */
 	mac->ops.setup_led = e1000e_setup_led_generic;
 	/* cleanup LED */
@@ -265,7 +265,7 @@ static s32 e1000_init_mac_params_80003es2lan(struct e1000_hw *hw)
 	/* set lan id for port to determine which phy lock to use */
 	hw->mac.ops.set_lan_id(hw);
 
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -390,7 +390,7 @@ static s32 e1000_acquire_swfw_sync_80003es2lan(struct e1000_hw *hw, u16 mask)
 	u32 swfw_sync;
 	u32 swmask = mask;
 	u32 fwmask = mask << 16;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	s32 i = 0, timeout = 50;
 
 	while (i < timeout) {
@@ -439,7 +439,7 @@ static void e1000_release_swfw_sync_80003es2lan(struct e1000_hw *hw, u16 mask)
 {
 	u32 swfw_sync;
 
-	while (e1000e_get_hw_semaphore(hw) != E1000_SUCCESS)
+	while (e1000e_get_hw_semaphore(hw) != 0)
 		; /* Empty */
 
 	swfw_sync = er32(SW_FW_SYNC);
@@ -620,7 +620,7 @@ static s32 e1000_write_nvm_80003es2lan(struct e1000_hw *hw, u16 offset,
 static s32 e1000_get_cfg_done_80003es2lan(struct e1000_hw *hw)
 {
 	s32 timeout = PHY_CFG_TIMEOUT;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u32 mask = E1000_NVM_CFG_DONE_PORT_0;
 
 	if (hw->bus.func == 1)
@@ -629,7 +629,7 @@ static s32 e1000_get_cfg_done_80003es2lan(struct e1000_hw *hw)
 	while (timeout) {
 		if (er32(EEMNGCTL) & mask)
 			break;
-		msleep(1);
+		usleep_range(1000, 2000);
 		timeout--;
 	}
 	if (!timeout) {
@@ -651,7 +651,7 @@ out:
  **/
 static s32 e1000_phy_force_speed_duplex_80003es2lan(struct e1000_hw *hw)
 {
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u16 phy_data;
 	bool link;
 
@@ -746,7 +746,7 @@ out:
 static s32 e1000_get_cable_length_80003es2lan(struct e1000_hw *hw)
 {
 	struct e1000_phy_info *phy = &hw->phy;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u16 phy_data, index;
 
 	ret_val = e1e_rphy(hw, GG82563_PHY_DSP_DISTANCE, &phy_data);
@@ -822,7 +822,7 @@ static s32 e1000_reset_hw_80003es2lan(struct e1000_hw *hw)
 	ew32(TCTL, E1000_TCTL_PSP);
 	e1e_flush();
 
-	msleep(10);
+	usleep_range(10000, 20000);
 
 	ctrl = er32(CTRL);
 
@@ -857,6 +857,7 @@ static s32 e1000_init_hw_80003es2lan(struct e1000_hw *hw)
 	struct e1000_mac_info *mac = &hw->mac;
 	u32 reg_data;
 	s32 ret_val;
+	u16 kum_reg_data;
 	u16 i;
 
 	e1000_initialize_hw_bits_80003es2lan(hw);
@@ -881,6 +882,13 @@ static s32 e1000_init_hw_80003es2lan(struct e1000_hw *hw)
 
 	/* Setup link and flow control */
 	ret_val = mac->ops.setup_link(hw);
+
+	/* Disable IBIST slave mode (far-end loopback) */
+	e1000_read_kmrn_reg_80003es2lan(hw, E1000_KMRNCTRLSTA_INBAND_PARAM,
+	                                &kum_reg_data);
+	kum_reg_data |= E1000_KMRNCTRLSTA_IBIST_DISABLE;
+	e1000_write_kmrn_reg_80003es2lan(hw, E1000_KMRNCTRLSTA_INBAND_PARAM,
+	                                 kum_reg_data);
 
 	/* Set the transmit descriptor write-back policy */
 	reg_data = er32(TXDCTL(0));
@@ -973,8 +981,6 @@ static void e1000_initialize_hw_bits_80003es2lan(struct e1000_hw *hw)
 	else
 		reg |= (1 << 28);
 	ew32(TARC(1), reg);
-
-	return;
 }
 
 /**
@@ -1200,7 +1206,7 @@ out:
  **/
 static s32 e1000_cfg_on_link_up_80003es2lan(struct e1000_hw *hw)
 {
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u16 speed;
 	u16 duplex;
 
@@ -1231,7 +1237,7 @@ out:
  **/
 static s32 e1000_cfg_kmrn_10_100_80003es2lan(struct e1000_hw *hw, u16 duplex)
 {
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u32 tipg;
 	u32 i = 0;
 	u16 reg_data, reg_data2;
@@ -1282,7 +1288,7 @@ out:
  **/
 static s32 e1000_cfg_kmrn_1000_80003es2lan(struct e1000_hw *hw)
 {
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u16 reg_data, reg_data2;
 	u32 tipg;
 	u32 i = 0;
@@ -1334,7 +1340,7 @@ static s32 e1000_read_kmrn_reg_80003es2lan(struct e1000_hw *hw, u32 offset,
                                            u16 *data)
 {
 	u32 kmrnctrlsta;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	ret_val = e1000_acquire_mac_csr_80003es2lan(hw);
 	if (ret_val)
@@ -1343,6 +1349,7 @@ static s32 e1000_read_kmrn_reg_80003es2lan(struct e1000_hw *hw, u32 offset,
 	kmrnctrlsta = ((offset << E1000_KMRNCTRLSTA_OFFSET_SHIFT) &
 	               E1000_KMRNCTRLSTA_OFFSET) | E1000_KMRNCTRLSTA_REN;
 	ew32(KMRNCTRLSTA, kmrnctrlsta);
+	e1e_flush();
 
 	udelay(2);
 
@@ -1369,7 +1376,7 @@ static s32 e1000_write_kmrn_reg_80003es2lan(struct e1000_hw *hw, u32 offset,
                                             u16 data)
 {
 	u32 kmrnctrlsta;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	ret_val = e1000_acquire_mac_csr_80003es2lan(hw);
 	if (ret_val)
@@ -1378,6 +1385,7 @@ static s32 e1000_write_kmrn_reg_80003es2lan(struct e1000_hw *hw, u32 offset,
 	kmrnctrlsta = ((offset << E1000_KMRNCTRLSTA_OFFSET_SHIFT) &
 	               E1000_KMRNCTRLSTA_OFFSET) | data;
 	ew32(KMRNCTRLSTA, kmrnctrlsta);
+	e1e_flush();
 
 	udelay(2);
 
@@ -1393,7 +1401,7 @@ out:
  **/
 static s32 e1000_read_mac_addr_80003es2lan(struct e1000_hw *hw)
 {
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	/*
 	 * If there's an alternate MAC address place it in RAR0
@@ -1423,8 +1431,6 @@ static void e1000_power_down_phy_copper_80003es2lan(struct e1000_hw *hw)
 	if (!(hw->mac.ops.check_mng_mode(hw) ||
 	      e1000_check_reset_block(hw)))
 		e1000_power_down_phy_copper(hw);
-
-	return;
 }
 
 /**

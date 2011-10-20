@@ -93,7 +93,7 @@ static void e1000_power_down_phy_copper_82571(struct e1000_hw *hw);
 static s32 e1000_init_phy_params_82571(struct e1000_hw *hw)
 {
 	struct e1000_phy_info *phy = &hw->phy;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	if (hw->phy.media_type != e1000_media_type_copper) {
 		phy->type = e1000_phy_none;
@@ -273,7 +273,7 @@ static s32 e1000_init_nvm_params_82571(struct e1000_hw *hw)
 	nvm->ops.valid_led_default = e1000_valid_led_default_82571;
 	nvm->ops.write         = e1000_write_nvm_82571;
 
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -347,8 +347,6 @@ static s32 e1000_init_mac_params_82571(struct e1000_hw *hw)
 	mac->ops.read_mac_addr = e1000_read_mac_addr_82571;
 	/* ID LED init */
 	mac->ops.id_led_init = e1000e_id_led_init;
-	/* blink LED */
-	mac->ops.blink_led = e1000e_blink_led;
 	/* setup LED */
 	mac->ops.setup_led = e1000e_setup_led_generic;
 	/* cleanup LED */
@@ -364,6 +362,7 @@ static s32 e1000_init_mac_params_82571(struct e1000_hw *hw)
 		mac->ops.set_lan_id = e1000_set_lan_id_single_port;
 		mac->ops.check_mng_mode = e1000e_check_mng_mode_generic;
 		mac->ops.led_on = e1000e_led_on_generic;
+		mac->ops.blink_led = e1000e_blink_led_generic;
 
 		/* FWSM register */
 		mac->has_fwsm = true;
@@ -384,6 +383,7 @@ static s32 e1000_init_mac_params_82571(struct e1000_hw *hw)
 	default:
 		mac->ops.check_mng_mode = e1000e_check_mng_mode_generic;
 		mac->ops.led_on = e1000e_led_on_generic;
+		mac->ops.blink_led = e1000e_blink_led_generic;
 
 		/* FWSM register */
 		mac->has_fwsm = true;
@@ -392,7 +392,7 @@ static s32 e1000_init_mac_params_82571(struct e1000_hw *hw)
 
 	/*
 	 * Ensure that the inter-port SWSM.SMBI lock bit is clear before
-	 * first NVM or PHY acess. This should be done for single-port
+	 * first NVM or PHY access. This should be done for single-port
 	 * devices, and for one port only on dual-port devices so that
 	 * for those devices we can still use the SMBI lock to synchronize
 	 * inter-port accesses to the PHY & NVM.
@@ -429,12 +429,12 @@ static s32 e1000_init_mac_params_82571(struct e1000_hw *hw)
 	}
 
 	/*
-	 * Initialze device specific counter of SMBI acquisition
+	 * Initialize device specific counter of SMBI acquisition
 	 * timeouts.
 	 */
 	 hw->dev_spec.e82571.smb_counter = 0;
 
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -462,7 +462,7 @@ void e1000_init_function_pointers_82571(struct e1000_hw *hw)
 static s32 e1000_get_phy_id_82571(struct e1000_hw *hw)
 {
 	struct e1000_phy_info *phy = &hw->phy;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u16 phy_id = 0;
 
 	switch (hw->mac.type) {
@@ -511,7 +511,7 @@ out:
 static s32 e1000_get_hw_semaphore_82571(struct e1000_hw *hw)
 {
 	u32 swsm;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	s32 sw_timeout = hw->nvm.word_size + 1;
 	s32 fw_timeout = hw->nvm.word_size + 1;
 	s32 i = 0;
@@ -589,7 +589,7 @@ static void e1000_put_hw_semaphore_82571(struct e1000_hw *hw)
 static s32 e1000_get_hw_semaphore_82573(struct e1000_hw *hw)
 {
 	u32 extcnf_ctrl;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	s32 i = 0;
 
 	extcnf_ctrl = er32(EXTCNF_CTRL);
@@ -603,7 +603,7 @@ static s32 e1000_get_hw_semaphore_82573(struct e1000_hw *hw)
 
 		extcnf_ctrl |= E1000_EXTCNF_CTRL_MDIO_SW_OWNERSHIP;
 
-		msleep(2);
+		usleep_range(2000, 4000);
 		i++;
 	} while (i < MDIO_OWNERSHIP_TIMEOUT);
 
@@ -690,7 +690,7 @@ static s32 e1000_set_d0_lplu_state_82574(struct e1000_hw *hw, bool active)
 		data &= ~E1000_PHY_CTRL_D0A_LPLU;
 
 	ew32(POEMB, data);
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -717,7 +717,7 @@ static s32 e1000_set_d3_lplu_state_82574(struct e1000_hw *hw, bool active)
 	}
 
 	ew32(POEMB, data);
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -779,7 +779,7 @@ static void e1000_release_nvm_82571(struct e1000_hw *hw)
 static s32 e1000_write_nvm_82571(struct e1000_hw *hw, u16 offset, u16 words,
                                  u16 *data)
 {
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	switch (hw->mac.type) {
 	case e1000_82573:
@@ -826,7 +826,7 @@ static s32 e1000_update_nvm_checksum_82571(struct e1000_hw *hw)
 
 	/* Check for pending operations. */
 	for (i = 0; i < E1000_FLASH_UPDATES; i++) {
-		msleep(1);
+		usleep_range(1000, 2000);
 		if ((er32(EECD) & E1000_EECD_FLUPD) == 0)
 			break;
 	}
@@ -852,7 +852,7 @@ static s32 e1000_update_nvm_checksum_82571(struct e1000_hw *hw)
 	ew32(EECD, eecd);
 
 	for (i = 0; i < E1000_FLASH_UPDATES; i++) {
-		msleep(1);
+		usleep_range(1000, 2000);
 		if ((er32(EECD) & E1000_EECD_FLUPD) == 0)
 			break;
 	}
@@ -942,13 +942,13 @@ out:
 static s32 e1000_get_cfg_done_82571(struct e1000_hw *hw)
 {
 	s32 timeout = PHY_CFG_TIMEOUT;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	while (timeout) {
 		if (er32(EEMNGCTL) &
 		    E1000_NVM_CFG_DONE_PORT_0)
 			break;
-		msleep(1);
+		usleep_range(1000, 2000);
 		timeout--;
 	}
 	if (!timeout) {
@@ -975,7 +975,7 @@ out:
 static s32 e1000_set_d0_lplu_state_82571(struct e1000_hw *hw, bool active)
 {
 	struct e1000_phy_info *phy = &hw->phy;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u16 data;
 
 	ret_val = e1e_rphy(hw, IGP02E1000_PHY_POWER_MGMT, &data);
@@ -1066,7 +1066,7 @@ static s32 e1000_reset_hw_82571(struct e1000_hw *hw)
 	ew32(TCTL, E1000_TCTL_PSP);
 	e1e_flush();
 
-	msleep(10);
+	usleep_range(10000, 20000);
 
 	/*
 	 * Must acquire the MDIO ownership before MAC reset.
@@ -1348,8 +1348,6 @@ static void e1000_initialize_hw_bits_82571(struct e1000_hw *hw)
 	default:
 		break;
 	}
-
-	return;
 }
 
 /**
@@ -1438,7 +1436,7 @@ static s32 e1000_led_on_82574(struct e1000_hw *hw)
 	}
 	ew32(LEDCTL, ctrl);
 
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -1452,7 +1450,7 @@ bool e1000_check_phy_82574(struct e1000_hw *hw)
 	u16 status_1kbt = 0;
 	u16 receive_errors = 0;
 	bool phy_hung = false;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	/*
 	 * Read PHY Receive Error counter first, if its is max - all F's then
@@ -1590,7 +1588,7 @@ static s32 e1000_setup_fiber_serdes_link_82571(struct e1000_hw *hw)
  *
  *  1) down
  *  2) autoneg_progress
- *  3) autoneg_complete (the link sucessfully autonegotiated)
+ *  3) autoneg_complete (the link successfully autonegotiated)
  *  4) forced_up (the link has been forced up, it did not autonegotiate)
  *
  **/
@@ -1602,7 +1600,7 @@ static s32 e1000_check_for_serdes_link_82571(struct e1000_hw *hw)
 	u32 status;
 	u32 txcw;
 	u32 i;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	ctrl = er32(CTRL);
 	status = er32(STATUS);
@@ -1824,7 +1822,6 @@ void e1000e_set_laa_state_82571(struct e1000_hw *hw, bool state)
 		 */
 		e1000e_rar_set(hw, hw->mac.addr,
 		                      hw->mac.rar_entry_count - 1);
-	return;
 }
 
 /**
@@ -1840,7 +1837,7 @@ void e1000e_set_laa_state_82571(struct e1000_hw *hw, bool state)
 static s32 e1000_fix_nvm_checksum_82571(struct e1000_hw *hw)
 {
 	struct e1000_nvm_info *nvm = &hw->nvm;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u16 data;
 
 	if (nvm->type != e1000_nvm_flash_hw)
@@ -1887,7 +1884,7 @@ out:
  **/
 static s32 e1000_read_mac_addr_82571(struct e1000_hw *hw)
 {
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	if (hw->mac.type == e1000_82571) {
 		/*
@@ -1924,8 +1921,6 @@ static void e1000_power_down_phy_copper_82571(struct e1000_hw *hw)
 	/* If the management interface is not enabled, then power down */
 	if (!(mac->ops.check_mng_mode(hw) || e1000_check_reset_block(hw)))
 		e1000_power_down_phy_copper(hw);
-
-	return;
 }
 
 /**

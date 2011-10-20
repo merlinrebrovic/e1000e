@@ -69,8 +69,8 @@
 #define E1000_WUFC_FLX3 0x00080000 /* Flexible Filter 3 Enable */
 #define E1000_WUFC_FLX4 0x00100000 /* Flexible Filter 4 Enable */
 #define E1000_WUFC_FLX5 0x00200000 /* Flexible Filter 5 Enable */
-#define E1000_WUFC_FLX6  0x00400000 /* Flexible Filter 6 Enable */
-#define E1000_WUFC_FLX7  0x00800000 /* Flexible Filter 7 Enable */
+#define E1000_WUFC_FLX6 0x00400000 /* Flexible Filter 6 Enable */
+#define E1000_WUFC_FLX7 0x00800000 /* Flexible Filter 7 Enable */
 #define E1000_WUFC_ALL_FILTERS_PHY_4 0x0000F0FF /*Mask for all wakeup filters*/
 #define E1000_WUFC_FLX_OFFSET_PHY 12 /* Offset to the Flexible Filters bits */
 #define E1000_WUFC_FLX_FILTERS_PHY_4 0x0000F000 /*Mask for 4 flexible filters*/
@@ -158,6 +158,8 @@
 #define E1000_CTRL_EXT_RO_DIS    0x00020000 /* Relaxed Ordering disable */
 #define E1000_CTRL_EXT_DMA_DYN_CLK_EN 0x00080000 /* DMA Dynamic Clock Gating */
 #define E1000_CTRL_EXT_LINK_MODE_MASK 0x00C00000
+#define E1000_CTRL_EXT_LINK_MODE_OFFSET 22  /* Offset of the link mode field
+                                             * in Ctrl Ext register */
 #define E1000_CTRL_EXT_LINK_MODE_GMII 0x00000000
 #define E1000_CTRL_EXT_LINK_MODE_TBI  0x00C00000
 #define E1000_CTRL_EXT_LINK_MODE_KMRN    0x00000000
@@ -193,6 +195,8 @@
 #define E1000_I2CCMD_READY            0x20000000
 #define E1000_I2CCMD_INTERRUPT_ENA    0x40000000
 #define E1000_I2CCMD_ERROR            0x80000000
+#define E1000_I2CCMD_SFP_DATA_ADDR(a) (0x0000 + (a))
+#define E1000_I2CCMD_SFP_DIAG_ADDR(a) (0x0100 + (a))
 #define E1000_MAX_SGMII_PHY_REG_ADDR  255
 #define E1000_I2CCMD_PHY_TIMEOUT      200
 
@@ -223,6 +227,7 @@
 #define E1000_RXD_SPC_CFI_MASK  0x1000  /* CFI is bit 12 */
 #define E1000_RXD_SPC_CFI_SHIFT 12
 
+#define E1000_RXDEXT_STATERR_LB    0x00040000
 #define E1000_RXDEXT_STATERR_CE    0x01000000
 #define E1000_RXDEXT_STATERR_SE    0x02000000
 #define E1000_RXDEXT_STATERR_SEQ   0x04000000
@@ -729,6 +734,8 @@
 #define E1000_PBA_48K 0x0030    /* 48KB */
 #define E1000_PBA_64K 0x0040    /* 64KB */
 
+#define E1000_PBA_RXA_MASK  0xFFFF;
+
 #define E1000_PBS_16K E1000_PBA_16K
 #define E1000_PBS_24K E1000_PBA_24K
 
@@ -786,6 +793,10 @@
 #define E1000_ICR_TXQ0          0x00400000 /* Tx Queue 0 Interrupt */
 #define E1000_ICR_TXQ1          0x00800000 /* Tx Queue 1 Interrupt */
 #define E1000_ICR_OTHER         0x01000000 /* Other Interrupts */
+
+
+#define E1000_ITR_MASK          0x000FFFFF /* ITR value bitfield */
+#define E1000_ITR_MULT          256        /* ITR mulitplier in nsec */
 
 /* PBA ECC Register */
 #define E1000_PBA_ECC_COUNTER_MASK  0xFFF00000 /* ECC counter mask */
@@ -935,7 +946,6 @@
 #define E1000_RAH_POOL_1        0x00040000
 
 /* Error Codes */
-#define E1000_SUCCESS      0
 #define E1000_ERR_NVM      1
 #define E1000_ERR_PHY      2
 #define E1000_ERR_CONFIG   3
@@ -1136,6 +1146,10 @@
 #define E1000_EECD_GNT       0x00000080 /* NVM Access Grant */
 #define E1000_EECD_PRES      0x00000100 /* NVM Present */
 #define E1000_EECD_SIZE      0x00000200 /* NVM Size (0=64 word 1=256 word) */
+#define E1000_EECD_BLOCKED   0x00008000 /* Bit banging access blocked flag */
+#define E1000_EECD_ABORT     0x00010000 /* NVM operation aborted flag */
+#define E1000_EECD_TIMEOUT   0x00020000 /* NVM read operation timeout flag */
+#define E1000_EECD_ERROR_CLR 0x00040000 /* NVM error status clear bit */
 /* NVM Addressing bits based on type 0=small, 1=large */
 #define E1000_EECD_ADDR_BITS 0x00000400
 #define E1000_EECD_TYPE      0x00002000 /* NVM Type (1-SPI, 0-Microwire) */
@@ -1505,8 +1519,6 @@
 #define E1000_GEN_CTL_READY             0x80000000
 #define E1000_GEN_CTL_ADDRESS_SHIFT     8
 #define E1000_GEN_POLL_TIMEOUT          640
-
-
 
 
 #endif /* _E1000_DEFINES_H_ */

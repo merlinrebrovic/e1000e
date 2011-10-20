@@ -173,9 +173,11 @@ ifneq ($(KSRC),$(shell cd /lib/modules/$(KVER)/build ; pwd -P))
 endif
 endif
 
-KKVER := $(shell echo $(KVER) | \
-         awk '{ if ($$0 ~ /2\.[4-9]\./) print "1"; else print "0"}')
-ifeq ($(KKVER), 0)
+KVER_CODE := $(shell $(CC) $(EXTRA_CFLAGS) -E -dM $(VSP) 2>/dev/null |\
+	grep -m 1 LINUX_VERSION_CODE | awk '{ print $$3 }' | sed 's/\"//g')
+
+# abort the build on kernels older than 2.4.0
+ifneq (1,$(shell [ $(KVER_CODE) -ge 132096 ] && echo 1 || echo 0))
   $(error *** Aborting the build. \
           *** This driver is not supported on kernel versions older than 2.4.0)
 endif
@@ -209,13 +211,11 @@ ifeq ($(SMP),1)
 endif
 
 ###########################################################################
-# 2.4.x & 2.6.x Specific rules
+# Kernel Version Specific rules
 
-K_VERSION:=$(shell uname -r | cut -c1-3 | sed 's/2\.[56]/2\.6/')
+ifeq (1,$(shell [ $(KVER_CODE) -ge 132352 ] && echo 1 || echo 0))
 
-ifeq ($(K_VERSION), 2.6)
-
-# Makefile for 2.6.x kernel
+# Makefile for 2.5.x and newer kernel
 TARGET = $(DRIVER_NAME).ko
 
 # man page
@@ -235,7 +235,7 @@ else
 endif
 endif
 
-else # ifeq ($(K_VERSION),2.6)
+else # ifeq (1,$(shell [ $(KVER_CODE) -ge 132352 ] && echo 1 || echo 0))
 
 # Makefile for 2.4.x kernel
 TARGET = $(DRIVER_NAME).o
@@ -271,7 +271,7 @@ $(CFILES:.c=.o): $(HFILES) Makefile
 default:
 	$(MAKE)
 
-endif # ifeq ($(K_VERSION),2.6)
+endif # ifeq (1,$(shell [ $(KVER_CODE) -ge 132352 ] && echo 1 || echo 0))
 
 ifeq (,$(MANDIR))
   # find the best place to install the man page

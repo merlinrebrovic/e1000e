@@ -62,7 +62,7 @@ static u8 e1000_calculate_checksum(u8 *buffer, u32 length)
 s32 e1000_mng_enable_host_if(struct e1000_hw *hw)
 {
 	u32 hicr;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u8 i;
 
 	if (!(hw->mac.arc_subsystem_valid)) {
@@ -242,7 +242,7 @@ s32 e1000_mng_write_cmd_header(struct e1000_hw *hw,
 		e1e_flush();
 	}
 
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -263,7 +263,7 @@ s32 e1000_mng_host_if_write(struct e1000_hw *hw, u8 *buffer,
 	u8 *tmp;
 	u8 *bufptr = buffer;
 	u32 data = 0;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u16 remaining, i, j, prev_bytes;
 
 	/* sum = only sum of the data and it is not checksum */

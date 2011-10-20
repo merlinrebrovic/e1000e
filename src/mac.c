@@ -102,7 +102,7 @@ s32 e1000e_get_bus_info_pcie(struct e1000_hw *hw)
 
 	mac->ops.set_lan_id(hw);
 
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -176,7 +176,7 @@ void e1000_write_vfta_generic(struct e1000_hw *hw, u32 offset, u32 value)
  *  @hw: pointer to the HW structure
  *  @rar_count: receive address registers
  *
- *  Setups the receive address registers by setting the base receive address
+ *  Setup the receive address registers by setting the base receive address
  *  register to the devices MAC address and clearing all the other receive
  *  address registers to 0.
  **/
@@ -211,7 +211,7 @@ void e1000e_init_rx_addrs(struct e1000_hw *hw, u16 rar_count)
 s32 e1000_check_alt_mac_addr_generic(struct e1000_hw *hw)
 {
 	u32 i;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u16 offset, nvm_alt_mac_addr_offset, nvm_data;
 	u8 alt_mac_addr[ETH_ALEN];
 
@@ -222,7 +222,8 @@ s32 e1000_check_alt_mac_addr_generic(struct e1000_hw *hw)
 	/* Check for LOM (vs. NIC) or one of two valid mezzanine cards */
 	if (!((nvm_data & NVM_COMPAT_LOM) ||
 	      (hw->adapter->pdev->device == E1000_DEV_ID_82571EB_SERDES_DUAL) ||
-	      (hw->adapter->pdev->device == E1000_DEV_ID_82571EB_SERDES_QUAD)))
+	      (hw->adapter->pdev->device == E1000_DEV_ID_82571EB_SERDES_QUAD) ||
+	      (hw->adapter->pdev->device == E1000_DEV_ID_82571EB_SERDES)))
 		goto out;
 
 	ret_val = e1000_read_nvm(hw, NVM_ALT_MAC_ADDR_PTR, 1,
@@ -232,10 +233,10 @@ s32 e1000_check_alt_mac_addr_generic(struct e1000_hw *hw)
 		goto out;
 	}
 
-	if (nvm_alt_mac_addr_offset == 0xFFFF) {
+	if ((nvm_alt_mac_addr_offset == 0xFFFF) ||
+	    (nvm_alt_mac_addr_offset == 0x0000))
 		/* There is no Alternate MAC Address */
 		goto out;
-	}
 
 	if (hw->bus.func == E1000_FUNC_1)
 		nvm_alt_mac_addr_offset += E1000_ALT_MAC_ADDRESS_OFFSET_LAN1;
@@ -252,7 +253,7 @@ s32 e1000_check_alt_mac_addr_generic(struct e1000_hw *hw)
 	}
 
 	/* if multicast bit is set, the alternate address will not be used */
-	if (alt_mac_addr[0] & 0x01) {
+	if (is_multicast_ether_addr(alt_mac_addr)) {
 		e_dbg("Ignoring Alternate Mac Address with MC bit set\n");
 		goto out;
 	}
@@ -478,7 +479,7 @@ s32 e1000e_check_for_copper_link(struct e1000_hw *hw)
 	 * Change or Rx Sequence Error interrupt.
 	 */
 	if (!mac->get_link_status) {
-		ret_val = E1000_SUCCESS;
+		ret_val = 0;
 		goto out;
 	}
 
@@ -545,7 +546,7 @@ s32 e1000e_check_for_fiber_link(struct e1000_hw *hw)
 	u32 rxcw;
 	u32 ctrl;
 	u32 status;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	ctrl = er32(CTRL);
 	status = er32(STATUS);
@@ -613,7 +614,7 @@ s32 e1000e_check_for_serdes_link(struct e1000_hw *hw)
 	u32 rxcw;
 	u32 ctrl;
 	u32 status;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	ctrl = er32(CTRL);
 	status = er32(STATUS);
@@ -690,7 +691,7 @@ s32 e1000e_check_for_serdes_link(struct e1000_hw *hw)
 				if (!(rxcw & E1000_RXCW_IV)) {
 					mac->serdes_has_link = true;
 					e_dbg("SERDES: Link up - autoneg "
-					   "completed sucessfully.\n");
+					   "completed successfully.\n");
 				} else {
 					mac->serdes_has_link = false;
 					e_dbg("SERDES: Link down - invalid"
@@ -722,7 +723,7 @@ out:
  **/
 s32 e1000e_setup_link(struct e1000_hw *hw)
 {
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	/*
 	 * In the case of the phy reset being blocked, we already have a link.
@@ -785,7 +786,7 @@ s32 e1000e_setup_fiber_serdes_link(struct e1000_hw *hw)
 {
 	struct e1000_mac_info *mac = &hw->mac;
 	u32 ctrl;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	ctrl = er32(CTRL);
 
@@ -809,7 +810,7 @@ s32 e1000e_setup_fiber_serdes_link(struct e1000_hw *hw)
 
 	ew32(CTRL, ctrl);
 	e1e_flush();
-	msleep(1);
+	usleep_range(1000, 2000);
 
 	/*
 	 * For these adapters, the SW definable pin 1 is set when the optics
@@ -858,7 +859,7 @@ static s32 e1000_poll_fiber_serdes_link_generic(struct e1000_hw *hw)
 {
 	struct e1000_mac_info *mac = &hw->mac;
 	u32 i, status;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	/*
 	 * If we have a signal (the cable is plugged in, or assumed true for
@@ -868,7 +869,7 @@ static s32 e1000_poll_fiber_serdes_link_generic(struct e1000_hw *hw)
 	 * milliseconds even if the other end is doing it in SW).
 	 */
 	for (i = 0; i < FIBER_LINK_UP_LIMIT; i++) {
-		msleep(10);
+		usleep_range(10000, 20000);
 		status = er32(STATUS);
 		if (status & E1000_STATUS_LU)
 			break;
@@ -908,7 +909,7 @@ static s32 e1000_commit_fc_settings_generic(struct e1000_hw *hw)
 {
 	struct e1000_mac_info *mac = &hw->mac;
 	u32 txcw;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	/*
 	 * Check for a software override of the flow control settings, and
@@ -1005,7 +1006,7 @@ s32 e1000e_set_fc_watermarks(struct e1000_hw *hw)
 	ew32(FCRTL, fcrtl);
 	ew32(FCRTH, fcrth);
 
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -1017,7 +1018,7 @@ s32 e1000e_set_fc_watermarks(struct e1000_hw *hw)
  **/
 static s32 e1000_set_default_fc_generic(struct e1000_hw *hw)
 {
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u16 nvm_data;
 
 	/*
@@ -1061,7 +1062,7 @@ out:
 s32 e1000e_force_mac_fc(struct e1000_hw *hw)
 {
 	u32 ctrl;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	ctrl = er32(CTRL);
 
@@ -1125,7 +1126,7 @@ out:
 s32 e1000e_config_fc_after_link_up(struct e1000_hw *hw)
 {
 	struct e1000_mac_info *mac = &hw->mac;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u16 mii_status_reg, mii_nway_adv_reg, mii_nway_lp_ability_reg;
 	u16 speed, duplex;
 
@@ -1230,7 +1231,7 @@ s32 e1000e_config_fc_after_link_up(struct e1000_hw *hw)
 			 * of pause frames.  In this case, we had to advertise
 			 * FULL flow control because we could not advertise Rx
 			 * ONLY. Hence, we must now check to see if we need to
-			 * turn OFF  the TRANSMISSION of PAUSE frames.
+			 * turn OFF the TRANSMISSION of PAUSE frames.
 			 */
 			if (hw->fc.requested_mode == e1000_fc_full) {
 				hw->fc.current_mode = e1000_fc_full;
@@ -1323,26 +1324,23 @@ s32 e1000e_get_speed_and_duplex_copper(struct e1000_hw *hw, u16 *speed,
 	u32 status;
 
 	status = er32(STATUS);
-	if (status & E1000_STATUS_SPEED_1000) {
+	if (status & E1000_STATUS_SPEED_1000)
 		*speed = SPEED_1000;
-		e_dbg("1000 Mbs, ");
-	} else if (status & E1000_STATUS_SPEED_100) {
+	else if (status & E1000_STATUS_SPEED_100)
 		*speed = SPEED_100;
-		e_dbg("100 Mbs, ");
-	} else {
+	else
 		*speed = SPEED_10;
-		e_dbg("10 Mbs, ");
-	}
 
-	if (status & E1000_STATUS_FD) {
+	if (status & E1000_STATUS_FD)
 		*duplex = FULL_DUPLEX;
-		e_dbg("Full Duplex\n");
-	} else {
+	else
 		*duplex = HALF_DUPLEX;
-		e_dbg("Half Duplex\n");
-	}
 
-	return E1000_SUCCESS;
+	e_dbg("%u Mbps, %s Duplex\n",
+	      *speed == SPEED_1000 ? 1000 : *speed == SPEED_100 ? 100 : 10,
+	      *duplex == FULL_DUPLEX ? "Full" : "Half");
+
+	return 0;
 }
 
 /**
@@ -1360,7 +1358,7 @@ s32 e1000e_get_speed_and_duplex_fiber_serdes(struct e1000_hw *hw,
 	*speed = SPEED_1000;
 	*duplex = FULL_DUPLEX;
 
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -1372,7 +1370,7 @@ s32 e1000e_get_speed_and_duplex_fiber_serdes(struct e1000_hw *hw,
 s32 e1000e_get_hw_semaphore(struct e1000_hw *hw)
 {
 	u32 swsm;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	s32 timeout = hw->nvm.word_size + 1;
 	s32 i = 0;
 
@@ -1439,12 +1437,12 @@ void e1000e_put_hw_semaphore(struct e1000_hw *hw)
 s32 e1000e_get_auto_rd_done(struct e1000_hw *hw)
 {
 	s32 i = 0;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	while (i < AUTO_READ_DONE_TIMEOUT) {
 		if (er32(EECD) & E1000_EECD_AUTO_RD)
 			break;
-		msleep(1);
+		usleep_range(1000, 2000);
 		i++;
 	}
 
@@ -1558,7 +1556,7 @@ out:
 s32 e1000e_setup_led_generic(struct e1000_hw *hw)
 {
 	u32 ledctl;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	if (hw->mac.ops.setup_led != e1000e_setup_led_generic) {
 		ret_val = -E1000_ERR_CONFIG;
@@ -1593,16 +1591,16 @@ out:
 s32 e1000e_cleanup_led_generic(struct e1000_hw *hw)
 {
 	ew32(LEDCTL, hw->mac.ledctl_default);
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
- *  e1000e_blink_led - Blink LED
+ *  e1000e_blink_led_generic - Blink LED
  *  @hw: pointer to the HW structure
  *
  *  Blink the LEDs which are set to be on.
  **/
-s32 e1000e_blink_led(struct e1000_hw *hw)
+s32 e1000e_blink_led_generic(struct e1000_hw *hw)
 {
 	u32 ledctl_blink = 0;
 	u32 i;
@@ -1626,7 +1624,7 @@ s32 e1000e_blink_led(struct e1000_hw *hw)
 
 	ew32(LEDCTL, ledctl_blink);
 
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -1653,7 +1651,7 @@ s32 e1000e_led_on_generic(struct e1000_hw *hw)
 		break;
 	}
 
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -1680,7 +1678,7 @@ s32 e1000e_led_off_generic(struct e1000_hw *hw)
 		break;
 	}
 
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -1707,7 +1705,7 @@ void e1000e_set_pcie_no_snoop(struct e1000_hw *hw, u32 no_snoop)
  *  e1000e_disable_pcie_master - Disables PCI-express master access
  *  @hw: pointer to the HW structure
  *
- *  Returns E1000_SUCCESS if successful, else returns -10
+ *  Returns 0 if successful, else returns -10
  *  (-E1000_ERR_MASTER_REQUESTS_PENDING) if master disable bit has not caused
  *  the master requests to be disabled.
  *
@@ -1718,7 +1716,7 @@ s32 e1000e_disable_pcie_master(struct e1000_hw *hw)
 {
 	u32 ctrl;
 	s32 timeout = MASTER_DISABLE_TIMEOUT;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	ctrl = er32(CTRL);
 	ctrl |= E1000_CTRL_GIO_MASTER_DISABLE;
@@ -1816,7 +1814,7 @@ out:
  **/
 static s32 e1000_validate_mdi_setting_generic(struct e1000_hw *hw)
 {
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	if (!hw->mac.autoneg && (hw->phy.mdix == 0 || hw->phy.mdix == 3)) {
 		e_dbg("Invalid MDI setting detected\n");

@@ -40,8 +40,6 @@ s32  e1000e_read_nvm_eerd(struct e1000_hw *hw, u16 offset, u16 words,
                          u16 *data);
 s32  e1000e_valid_led_default(struct e1000_hw *hw, u16 *data);
 s32  e1000e_validate_nvm_checksum_generic(struct e1000_hw *hw);
-s32  e1000_write_nvm_eewr(struct e1000_hw *hw, u16 offset,
-                          u16 words, u16 *data);
 s32  e1000e_write_nvm_spi(struct e1000_hw *hw, u16 offset, u16 words,
                          u16 *data);
 s32  e1000e_update_nvm_checksum_generic(struct e1000_hw *hw);

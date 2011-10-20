@@ -4,7 +4,7 @@
 .\"
 .\" * Other names and brands may be claimed as the property of others.
 .\"
-.TH e1000e 1 "February 8, 2011"
+.TH e1000e 1 "March 14, 2011"
 
 .SH NAME
 e1000e \-This file describes the Linux* Base Driver for the Gigabit Family of Adapters.
@@ -172,7 +172,7 @@ Jumbo Frames support is enabled by changing the MTU to a value larger than the d
 ifconfig ethx mtu 9000 up
 .LP
 .B NOTE: 
-Jumbo Frames are supported at 1000 Mbps only.  Using Jumbo Frames at 10 or 100 Mbps may result in poor performance or loss of link.
+Using Jumbo frames at 10 or 100 Mbps is not supported and may result in poor performance or loss of link.
 .LP
 The maximum MTU setting for Jumbo Frames is 9216.  This value coincides with the maximum Jumbo Frames size of 9234 bytes.
 .LP
@@ -180,13 +180,13 @@ Adapters based on the Intel(R) 82573V/E controllers do not support Jumbo Frames.
 .LP
 See the section "Jumbo Frames" in Readme.
 .LP
-.SH Ethtool
+.SH ethtool
 .LP
-The driver utilizes the ethtool interface for driver configuration and diagnostics, as well as displaying statistical information.  Ethtool version 3 or later is required for this functionality, although we strongly recommend downloading the latest version at: http://sourceforge.net/projects/gkernel.
+The driver utilizes the ethtool interface for driver configuration and diagnostics, as well as displaying statistical information.  ethtool version 3 or later is required for this functionality, although we strongly recommend downloading the latest version at: http://ftp.kernel.org/pub/software/network/ethtool/.
 .LP
 .SH SPEED AND DUPLEX SETTINGS
 .LP
-Speed and Duplex are configured through the Ethtool* utility.  Ethtool is included with all versions of Red Hat after Red Hat7.2.  For other Linux distributions, download and install Ethtool from the following website: http://sourceforge.net/projects/gkernel.  
+Speed and Duplex are configured through the ethtool* utility.  ethtool is included with all versions of Red Hat after Red Hat7.2.  For other Linux distributions, download and install ethtool from the following website: http://sourceforge.net/projects/gkernel.  
 .LP
 .SH NAPI
 .LP

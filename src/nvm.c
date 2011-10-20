@@ -173,7 +173,7 @@ s32 e1000e_poll_eerd_eewr_done(struct e1000_hw *hw, int ee_reg)
 			reg = er32(EEWR);
 
 		if (reg & E1000_NVM_RW_REG_DONE) {
-			ret_val = E1000_SUCCESS;
+			ret_val = 0;
 			break;
 		}
 
@@ -195,7 +195,7 @@ s32 e1000e_acquire_nvm(struct e1000_hw *hw)
 {
 	u32 eecd = er32(EECD);
 	s32 timeout = E1000_NVM_GRANT_ATTEMPTS;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	ew32(EECD, eecd | E1000_EECD_REQ);
 	eecd = er32(EECD);
@@ -286,7 +286,7 @@ static s32 e1000_ready_nvm_eeprom(struct e1000_hw *hw)
 {
 	struct e1000_nvm_info *nvm = &hw->nvm;
 	u32 eecd = er32(EECD);
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u8 spi_stat_reg;
 
 	if (nvm->type == e1000_nvm_eeprom_spi) {
@@ -295,6 +295,7 @@ static s32 e1000_ready_nvm_eeprom(struct e1000_hw *hw)
 		/* Clear SK and CS */
 		eecd &= ~(E1000_EECD_CS | E1000_EECD_SK);
 		ew32(EECD, eecd);
+		e1e_flush();
 		udelay(1);
 
 		/*
@@ -339,7 +340,7 @@ s32 e1000e_read_nvm_eerd(struct e1000_hw *hw, u16 offset, u16 words, u16 *data)
 {
 	struct e1000_nvm_info *nvm = &hw->nvm;
 	u32 i, eerd = 0;
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 
 	/*
 	 * A check for invalid values:  offset too large, too many words,
@@ -443,7 +444,7 @@ s32 e1000e_write_nvm_spi(struct e1000_hw *hw, u16 offset, u16 words, u16 *data)
 		}
 	}
 
-	msleep(10);
+	usleep_range(10000, 20000);
 release:
 	nvm->ops.release(hw);
 
@@ -590,7 +591,7 @@ s32 e1000_read_mac_addr_generic(struct e1000_hw *hw)
 	for (i = 0; i < ETH_ALEN; i++)
 		hw->mac.addr[i] = hw->mac.perm_addr[i];
 
-	return E1000_SUCCESS;
+	return 0;
 }
 
 /**
@@ -602,7 +603,7 @@ s32 e1000_read_mac_addr_generic(struct e1000_hw *hw)
  **/
 s32 e1000e_validate_nvm_checksum_generic(struct e1000_hw *hw)
 {
-	s32 ret_val = E1000_SUCCESS;
+	s32 ret_val = 0;
 	u16 checksum = 0;
 	u16 i, nvm_data;
 

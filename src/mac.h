@@ -34,7 +34,7 @@
  * by other files in this 'shared code'
  */
 void e1000_init_mac_ops_generic(struct e1000_hw *hw);
-s32  e1000e_blink_led(struct e1000_hw *hw);
+s32  e1000e_blink_led_generic(struct e1000_hw *hw);
 s32  e1000e_check_for_copper_link(struct e1000_hw *hw);
 s32  e1000e_check_for_fiber_link(struct e1000_hw *hw);
 s32  e1000e_check_for_serdes_link(struct e1000_hw *hw);
